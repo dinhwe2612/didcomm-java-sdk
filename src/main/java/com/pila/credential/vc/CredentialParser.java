@@ -65,6 +65,11 @@ public class CredentialParser {
         // Try as JWT string
         String valStr = new String(rawCredential);
         if (isJWTCredential(valStr)) {
+            // TODO: Implement JWT credential parsing
+            // - Parse JWT header, payload, and signature
+            // - Extract credential claims from JWT payload
+            // - Verify JWT signature using issuer's public key
+            // - Return JWTCredential instance
             throw new UnsupportedOperationException("JWT credential parsing is not yet implemented");
         }
 
@@ -75,6 +80,12 @@ public class CredentialParser {
      * Parses a credential with validation (schema validation is bypassed).
      */
     public static Credential parseCredentialWithValidation(byte[] rawCredential) throws Exception {
+        // TODO: Implement JSON schema validation for Verifiable Credentials
+        // - Load JSON schema from credentialSchema field or external URL
+        // - Validate credential structure against JSON schema
+        // - Validate required fields (@context, type, issuer, credentialSubject, etc.)
+        // - Validate field types and formats according to schema
+        // - Throw validation errors if schema validation fails
         // Schema validation is bypassed, just parse normally
         return parseCredential(rawCredential);
     }
