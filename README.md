@@ -77,6 +77,42 @@ String plaintext = Decryptor.decrypt(jweJsonString, shared);
 System.out.println(plaintext);
 ```
 
+JSON-LD Canonicalization
+
+Canonicalize JSON-LD documents for signing or hashing:
+
+```java
+import com.pila.credential.common.processor.Processor;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
+
+// Parse JSON string to Map
+String jsonString = "{\"@context\":[\"https://www.w3.org/ns/credentials/v2\"],\"type\":\"VerifiableCredential\",\"issuer\":\"did:example:123\",\"credentialSubject\":{\"id\":\"did:example:456\"}}";
+ObjectMapper mapper = new ObjectMapper();
+Map<String, Object> doc = mapper.readValue(jsonString, Map.class);
+
+// Canonicalize the document (returns canonical N-Quads as bytes)
+byte[] canonicalBytes = Processor.canonicalizeDocument(doc);
+String canonicalNQuads = new String(canonicalBytes);
+System.out.println("Canonical N-Quads:\n" + canonicalNQuads);
+
+// Compute SHA-256 digest of canonical form
+byte[] digest = Processor.computeDigest(canonicalBytes);
+System.out.println("Digest: " + bytesToHex(digest));
+
+// Helper method to convert bytes to hex
+private static String bytesToHex(byte[] bytes) {
+    StringBuilder sb = new StringBuilder(bytes.length * 2);
+    for (byte b : bytes) sb.append(String.format("%02x", b));
+    return sb.toString();
+}
+```
+
+**Use cases:**
+- Generate deterministic hashes for JSON-LD documents
+- Create signing input for Data Integrity Proofs
+- Compare JSON-LD documents in canonical form
+
 Verifying Credentials
 
 Use `CredentialParser` to parse and verify credentials:
@@ -116,3 +152,4 @@ Notes
 - Keys are secp256k1 (compressed pubkey hex, 32-byte privkey hex).
 - JWE JSON produced here uses alg ECDH-ES and enc A256GCM (simple format for demo/testing).
 - Credential verification requires DID resolver base URL to be configured via `CredentialConfig.init(baseURL)` (defaults to `https://auth-dev.pila.vn/api/v1/did`).
+- JSON-LD canonicalization uses RDF Dataset Canonicalization (RDFC) algorithm for deterministic document hashing.
