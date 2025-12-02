@@ -77,9 +77,42 @@ String plaintext = Decryptor.decrypt(jweJsonString, shared);
 System.out.println(plaintext);
 ```
 
+Verifying Credentials
+
+Use `CredentialParser` to parse and verify credentials:
+
+```java
+import com.pila.credential.vc.CredentialParser;
+import com.pila.credential.vc.Credential;
+import com.pila.credential.vc.CredentialConfig;
+
+// Optional: Configure DID resolver base URL (defaults to https://auth-dev.pila.vn/api/v1/did)
+CredentialConfig.init("https://your-did-resolver.com/api/v1/did");
+
+// Parse credential from JSON bytes
+String jsonCredentialString = "{...}"; // Your credential JSON
+byte[] rawCredential = jsonCredentialString.getBytes();
+Credential credential = CredentialParser.parseCredential(rawCredential);
+
+// Verify the credential (checks proof signature)
+credential.verify();
+
+// Access credential contents
+byte[] contents = credential.getContents();
+System.out.println(new String(contents));
+```
+
+The `parseCredential()` method supports:
+- JSON credentials (embedded proof format)
+- JWT credentials (parsing not yet implemented)
+
+The `verify()` method validates:
+- Proof signature using the verification method from the credential
+- DID document resolution (if needed)
+- Cryptographic proof verification
+
 Notes
 
 - Keys are secp256k1 (compressed pubkey hex, 32-byte privkey hex).
 - JWE JSON produced here uses alg ECDH-ES and enc A256GCM (simple format for demo/testing).
-
-# didcomm-java-sdk
+- Credential verification requires DID resolver base URL to be configured via `CredentialConfig.init(baseURL)` (defaults to `https://auth-dev.pila.vn/api/v1/did`).
