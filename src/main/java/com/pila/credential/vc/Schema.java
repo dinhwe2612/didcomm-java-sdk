@@ -10,4 +10,3 @@ public class Schema {
     private String id;
     private String type;
 }
-

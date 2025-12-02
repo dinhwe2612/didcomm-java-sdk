@@ -12,7 +12,7 @@ import java.util.function.Function;
  */
 public class VCUtil {
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    
+
     /**
      * Serializes a list of Proof objects to a JSON-LD compatible format.
      */
@@ -20,7 +20,7 @@ public class VCUtil {
         if (proofs == null || proofs.isEmpty()) {
             return null;
         }
-        
+
         List<JSONMap> result = new ArrayList<>();
         for (Proof proof : proofs) {
             JSONMap proofMap = new JSONMap();
@@ -44,13 +44,13 @@ public class VCUtil {
             }
             result.add(proofMap);
         }
-        
+
         if (result.size() == 1) {
             return result.get(0);
         }
         return result;
     }
-    
+
     /**
      * Serializes types to a JSON-LD compatible format.
      */
@@ -63,7 +63,7 @@ public class VCUtil {
         }
         return mapSlice(types, Function.identity());
     }
-    
+
     /**
      * Maps a list of type T to a list of type U using a mapping function.
      */
@@ -77,7 +77,7 @@ public class VCUtil {
         }
         return result;
     }
-    
+
     /**
      * Validates and converts a list of JSON-LD context entries.
      */
@@ -85,14 +85,14 @@ public class VCUtil {
         if (contexts == null) {
             return new ArrayList<>();
         }
-        
+
         List<Object> validated = new ArrayList<>(contexts.size());
         for (int i = 0; i < contexts.size(); i++) {
             Object ctx = contexts.get(i);
             if (ctx == null) {
                 throw new Exception("failed to validate context: context entry at index " + i + " is null");
             }
-            
+
             if (ctx instanceof String) {
                 String ctxStr = (String) ctx;
                 if (ctxStr.isEmpty()) {
@@ -103,32 +103,37 @@ public class VCUtil {
                 @SuppressWarnings("unchecked")
                 Map<String, Object> ctxMap = (Map<String, Object>) ctx;
                 if (ctxMap.containsKey("@context")) {
-                    throw new Exception("failed to validate context: context object at index " + i + " must not contain nested @context");
+                    throw new Exception("failed to validate context: context object at index " + i
+                            + " must not contain nested @context");
                 }
                 for (Map.Entry<String, Object> entry : ctxMap.entrySet()) {
                     if (entry.getKey().isEmpty()) {
-                        throw new Exception("failed to validate context: context object at index " + i + " has empty key");
+                        throw new Exception(
+                                "failed to validate context: context object at index " + i + " has empty key");
                     }
                     if (entry.getValue() instanceof String && ((String) entry.getValue()).isEmpty()) {
-                        throw new Exception("failed to validate context: context object at index " + i + " has empty string value for key \"" + entry.getKey() + "\"");
+                        throw new Exception("failed to validate context: context object at index " + i
+                                + " has empty string value for key \"" + entry.getKey() + "\"");
                     }
                 }
                 validated.add(ctxMap);
             } else {
-                throw new Exception("failed to validate context: invalid context entry at index " + i + ": must be string or map, got " + ctx.getClass().getName());
+                throw new Exception("failed to validate context: invalid context entry at index " + i
+                        + ": must be string or map, got " + ctx.getClass().getName());
             }
         }
         return validated;
     }
-    
+
     /**
-     * Splits a JSON object into two maps: one with specified fields, one with the rest.
+     * Splits a JSON object into two maps: one with specified fields, one with the
+     * rest.
      */
     public static Map<String, Object>[] splitJSONObj(Map<String, Object> json, String... fields) {
         Set<String> fieldSet = new HashSet<>(Arrays.asList(fields));
         Map<String, Object> fieldsMap = new HashMap<>();
         Map<String, Object> rest = new HashMap<>();
-        
+
         for (Map.Entry<String, Object> entry : json.entrySet()) {
             if (fieldSet.contains(entry.getKey())) {
                 fieldsMap.put(entry.getKey(), entry.getValue());
@@ -136,14 +141,14 @@ public class VCUtil {
                 rest.put(entry.getKey(), entry.getValue());
             }
         }
-        
+
         @SuppressWarnings("unchecked")
         Map<String, Object>[] result = new Map[2];
         result[0] = fieldsMap;
         result[1] = rest;
         return result;
     }
-    
+
     /**
      * Creates a shallow copy of a JSON object.
      */
@@ -153,13 +158,13 @@ public class VCUtil {
         }
         return new HashMap<>(json);
     }
-    
+
     /**
      * Converts an object, string, or bytes to a JSON object represented by a map.
      */
     public static Map<String, Object> toMap(Object v) throws Exception {
         byte[] b;
-        
+
         if (v instanceof byte[]) {
             b = (byte[]) v;
         } else if (v instanceof String) {
@@ -167,8 +172,7 @@ public class VCUtil {
         } else {
             b = objectMapper.writeValueAsBytes(v);
         }
-        
+
         return objectMapper.readValue(b, Map.class);
     }
 }
-

@@ -10,9 +10,12 @@ import com.pila.credential.common.verificationmethod.VerificationMethodResolver;
 import java.time.Instant;
 import java.util.*;
 
+import org.bouncycastle.util.encoders.Hex;
+
 /**
  * JSONMap represents a JSON object as a map.
- * This class provides methods for serialization, canonicalization, proof management, and verification.
+ * This class provides methods for serialization, canonicalization, proof
+ * management, and verification.
  */
 public class JSONMap extends HashMap<String, Object> {
 
@@ -35,6 +38,7 @@ public class JSONMap extends HashMap<String, Object> {
 
     /**
      * Serializes the JSONMap to JSON bytes.
+     * 
      * @return JSON bytes
      * @throws Exception if serialization fails
      */
@@ -60,6 +64,7 @@ public class JSONMap extends HashMap<String, Object> {
 
     /**
      * Converts the JSONMap to a standard Map.
+     * 
      * @return A Map representation
      * @throws Exception if conversion fails
      */
@@ -74,7 +79,9 @@ public class JSONMap extends HashMap<String, Object> {
     }
 
     /**
-     * Canonicalizes the JSONMap for signing or verification, excluding the proof field.
+     * Canonicalizes the JSONMap for signing or verification, excluding the proof
+     * field.
+     * 
      * @return The canonicalized and digested bytes
      * @throws Exception if canonicalization fails
      */
@@ -101,9 +108,9 @@ public class JSONMap extends HashMap<String, Object> {
      * Adds an ECDSA proof to the JSONMap.
      */
     public void addECDSAProof(String privKeyHex,
-                              String verificationMethod,
-                              String proofPurpose,
-                              String didBaseURL) throws Exception {
+            String verificationMethod,
+            String proofPurpose,
+            String didBaseURL) throws Exception {
         if (this == null) {
             throw new IllegalStateException("JSONMap is null");
         }
@@ -160,8 +167,7 @@ public class JSONMap extends HashMap<String, Object> {
 
         if (!(proof instanceof Map)) {
             throw new IllegalArgumentException(
-                "invalid proof format: expected Map, got " + (proof != null ? proof.getClass().getName() : "null")
-            );
+                    "invalid proof format: expected Map, got " + (proof != null ? proof.getClass().getName() : "null"));
         }
 
         @SuppressWarnings("unchecked")
@@ -193,10 +199,6 @@ public class JSONMap extends HashMap<String, Object> {
      * Verifies an ECDSA-signed JSONMap.
      */
     public boolean verifyProof(String didBaseURL) throws Exception {
-        if (this == null) {
-            throw new IllegalStateException("JSONMap is null");
-        }
-
         Object proofObj = this.get("proof");
         if (proofObj == null) {
             throw new Exception("JSONMap has no proof");
@@ -315,7 +317,7 @@ public class JSONMap extends HashMap<String, Object> {
         byte[] bytes = new byte[hex.length() / 2];
         for (int i = 0; i < hex.length(); i += 2) {
             bytes[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
-                                 + Character.digit(hex.charAt(i + 1), 16));
+                    + Character.digit(hex.charAt(i + 1), 16));
         }
         return bytes;
     }

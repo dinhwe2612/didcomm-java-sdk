@@ -9,7 +9,7 @@ import java.util.*;
  * Helper functions for credential serialization and parsing.
  */
 public class CredentialHelper {
-    
+
     /**
      * Serializes CredentialContents into a CredentialData.
      */
@@ -17,56 +17,56 @@ public class CredentialHelper {
         if (vcc == null) {
             throw new IllegalArgumentException("credential contents is nil");
         }
-        
+
         // Validate that at least one essential field is present
-        if ((vcc.getContext() == null || vcc.getContext().isEmpty()) 
-            && (vcc.getId() == null || vcc.getId().isEmpty())
-            && (vcc.getIssuer() == null || vcc.getIssuer().isEmpty())) {
+        if ((vcc.getContext() == null || vcc.getContext().isEmpty())
+                && (vcc.getId() == null || vcc.getId().isEmpty())
+                && (vcc.getIssuer() == null || vcc.getIssuer().isEmpty())) {
             throw new IllegalArgumentException("credential contents must have at least one of: context, ID, or issuer");
         }
-        
+
         CredentialData vcJSON = new CredentialData();
-        
+
         if (vcc.getContext() != null && !vcc.getContext().isEmpty()) {
             List<Object> validatedContext = VCUtil.serializeContexts(vcc.getContext());
             vcJSON.put("@context", validatedContext);
         }
-        
+
         if (vcc.getId() != null && !vcc.getId().isEmpty()) {
             vcJSON.put("id", vcc.getId());
         }
-        
+
         if (vcc.getTypes() != null && !vcc.getTypes().isEmpty()) {
             vcJSON.put("type", VCUtil.serializeTypes(vcc.getTypes()));
         }
-        
+
         if (vcc.getSubject() != null && !vcc.getSubject().isEmpty()) {
             vcJSON.put("credentialSubject", serializeSubjects(vcc.getSubject()));
         }
-        
+
         if (vcc.getIssuer() != null && !vcc.getIssuer().isEmpty()) {
             vcJSON.put("issuer", vcc.getIssuer());
         }
-        
+
         if (vcc.getSchemas() != null && !vcc.getSchemas().isEmpty()) {
             vcJSON.put("credentialSchema", serializeSchemas(vcc.getSchemas()));
         }
-        
+
         if (vcc.getCredentialStatus() != null && !vcc.getCredentialStatus().isEmpty()) {
             vcJSON.put("credentialStatus", serializeStatuses(vcc.getCredentialStatus()));
         }
-        
+
         if (vcc.getValidFrom() != null) {
             vcJSON.put("validFrom", vcc.getValidFrom().toString());
         }
-        
+
         if (vcc.getValidUntil() != null) {
             vcJSON.put("validUntil", vcc.getValidUntil().toString());
         }
-        
+
         return vcJSON;
     }
-    
+
     /**
      * Serializes subjects to JSON.
      */
@@ -79,7 +79,7 @@ public class CredentialHelper {
         }
         return VCUtil.mapSlice(subjects, CredentialHelper::serializeSubject);
     }
-    
+
     /**
      * Serializes a single subject to JSON.
      */
@@ -90,7 +90,7 @@ public class CredentialHelper {
         }
         return jsonObj;
     }
-    
+
     /**
      * Serializes schemas to JSON.
      */
@@ -103,7 +103,7 @@ public class CredentialHelper {
         }
         return VCUtil.mapSlice(schemas, CredentialHelper::serializeSchema);
     }
-    
+
     /**
      * Serializes a single schema to JSON.
      */
@@ -113,7 +113,7 @@ public class CredentialHelper {
         result.put("type", schema.getType());
         return result;
     }
-    
+
     /**
      * Serializes statuses to JSON.
      */
@@ -126,7 +126,7 @@ public class CredentialHelper {
         }
         return VCUtil.mapSlice(statuses, CredentialHelper::serializeStatus);
     }
-    
+
     /**
      * Serializes a single status to JSON.
      */
@@ -149,7 +149,7 @@ public class CredentialHelper {
         }
         return result;
     }
-    
+
     /**
      * Parses context from CredentialData.
      */
@@ -162,12 +162,13 @@ public class CredentialHelper {
                 if (ctx instanceof String || ctx instanceof Map) {
                     contents.getContext().add(ctx);
                 } else {
-                    throw new Exception("unsupported context type: " + (ctx != null ? ctx.getClass().getName() : "null"));
+                    throw new Exception(
+                            "unsupported context type: " + (ctx != null ? ctx.getClass().getName() : "null"));
                 }
             }
         }
     }
-    
+
     /**
      * Parses ID from CredentialData.
      */
@@ -177,7 +178,7 @@ public class CredentialHelper {
             contents.setId((String) idObj);
         }
     }
-    
+
     /**
      * Parses types from CredentialData.
      */
@@ -197,7 +198,7 @@ public class CredentialHelper {
             throw new Exception("unsupported type field: " + typeObj.getClass().getName());
         }
     }
-    
+
     /**
      * Parses issuer from CredentialData.
      */
@@ -207,7 +208,7 @@ public class CredentialHelper {
             contents.setIssuer((String) issuerObj);
         }
     }
-    
+
     /**
      * Parses dates from CredentialData.
      */
@@ -220,7 +221,7 @@ public class CredentialHelper {
                 throw new Exception("failed to parse validFrom: " + e.getMessage(), e);
             }
         }
-        
+
         Object validUntilObj = c.get("validUntil");
         if (validUntilObj instanceof String) {
             try {
@@ -230,7 +231,7 @@ public class CredentialHelper {
             }
         }
     }
-    
+
     /**
      * Parses subject from CredentialData.
      */
@@ -239,7 +240,7 @@ public class CredentialHelper {
         if (subjectRaw == null) {
             return;
         }
-        
+
         if (subjectRaw instanceof String) {
             contents.getSubject().add(new Subject((String) subjectRaw, new HashMap<>()));
         } else if (subjectRaw instanceof Map) {
@@ -257,14 +258,16 @@ public class CredentialHelper {
                     Subject parsed = subjectFromJSON(new CredentialData(subjectMap));
                     contents.getSubject().add(parsed);
                 } else {
-                    throw new Exception("unsupported subject format: " + (raw != null ? raw.getClass().getName() : "null"));
+                    throw new Exception(
+                            "unsupported subject format: " + (raw != null ? raw.getClass().getName() : "null"));
                 }
             }
         } else {
-            throw new Exception("unsupported subject format: " + (subjectRaw != null ? subjectRaw.getClass().getName() : "null"));
+            throw new Exception(
+                    "unsupported subject format: " + (subjectRaw != null ? subjectRaw.getClass().getName() : "null"));
         }
     }
-    
+
     /**
      * Creates a Subject from JSON.
      */
@@ -272,11 +275,11 @@ public class CredentialHelper {
         Map<String, Object>[] split = VCUtil.splitJSONObj(subjectObj, "id");
         Map<String, Object> fieldsMap = split[0];
         Map<String, Object> rest = split[1];
-        
+
         String id = parseStringField(new CredentialData(fieldsMap), "id");
         return new Subject(id, rest);
     }
-    
+
     /**
      * Parses schema from CredentialData.
      */
@@ -285,7 +288,7 @@ public class CredentialHelper {
         if (schemaRaw == null) {
             return;
         }
-        
+
         if (schemaRaw instanceof Map) {
             @SuppressWarnings("unchecked")
             Map<String, Object> schemaMap = (Map<String, Object>) schemaRaw;
@@ -299,10 +302,11 @@ public class CredentialHelper {
                 contents.getSchemas().add(parsed);
             }
         } else {
-            throw new Exception("unsupported schema format: " + (schemaRaw != null ? schemaRaw.getClass().getName() : "null"));
+            throw new Exception(
+                    "unsupported schema format: " + (schemaRaw != null ? schemaRaw.getClass().getName() : "null"));
         }
     }
-    
+
     /**
      * Parses status from CredentialData.
      */
@@ -311,7 +315,7 @@ public class CredentialHelper {
         if (statusRaw == null) {
             return;
         }
-        
+
         if (statusRaw instanceof Map) {
             @SuppressWarnings("unchecked")
             Map<String, Object> statusMap = (Map<String, Object>) statusRaw;
@@ -327,14 +331,16 @@ public class CredentialHelper {
                     Status parsed = parseStatusEntry(statusMap);
                     contents.getCredentialStatus().add(parsed);
                 } else {
-                    throw new Exception("unsupported status format: " + (raw != null ? raw.getClass().getName() : "null"));
+                    throw new Exception(
+                            "unsupported status format: " + (raw != null ? raw.getClass().getName() : "null"));
                 }
             }
         } else {
-            throw new Exception("unsupported status format: " + (statusRaw != null ? statusRaw.getClass().getName() : "null"));
+            throw new Exception(
+                    "unsupported status format: " + (statusRaw != null ? statusRaw.getClass().getName() : "null"));
         }
     }
-    
+
     /**
      * Parses a single status entry.
      */
@@ -357,7 +363,7 @@ public class CredentialHelper {
         }
         return s;
     }
-    
+
     /**
      * Parses a Schema from a value.
      */
@@ -379,7 +385,7 @@ public class CredentialHelper {
         }
         return schema;
     }
-    
+
     /**
      * Parses a string field from a JSON object.
      */
@@ -393,14 +399,14 @@ public class CredentialHelper {
         }
         return null;
     }
-    
+
     /**
      * Validates a credential (bypassed - throws UnsupportedOperationException).
      */
     public static void validateCredential(CredentialData m) throws Exception {
         throw new UnsupportedOperationException("Schema validation is not yet implemented");
     }
-    
+
     /**
      * Converts a value to an array.
      */
@@ -418,4 +424,3 @@ public class CredentialHelper {
         return result;
     }
 }
-

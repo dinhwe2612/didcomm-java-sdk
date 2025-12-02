@@ -13,23 +13,22 @@ import java.util.Map;
 public class DIDDocument {
     @JsonProperty("@context")
     private List<String> context;
-    
+
     @JsonProperty("id")
     private String id;
-    
+
     @JsonProperty("verificationMethod")
     private List<VerificationMethodEntry> verificationMethod;
-    
+
     @JsonProperty("authentication")
     private List<String> authentication;
-    
+
     @JsonProperty("assertionMethod")
     private List<String> assertionMethod;
-    
+
     @JsonProperty("controller")
     private Object controller; // Can be string or List<String>
-    
+
     @JsonProperty("didDocumentMetadata")
     private Map<String, Object> didDocumentMetadata;
 }
-

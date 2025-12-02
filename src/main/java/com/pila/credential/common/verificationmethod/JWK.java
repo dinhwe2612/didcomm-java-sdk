@@ -10,14 +10,13 @@ import lombok.Data;
 public class JWK {
     @JsonProperty("kty")
     private String kty; // Key type
-    
+
     @JsonProperty("crv")
     private String crv; // Curve
-    
+
     @JsonProperty("x")
     private String x; // X coordinate
-    
+
     @JsonProperty("y")
     private String y; // Y coordinate
 }
-

@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 public class CredentialParser {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final Pattern JWT_PATTERN = Pattern.compile("^[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+$");
-    
+
     /**
      * Checks if the raw bytes represent a valid JSON credential.
      */
@@ -19,11 +19,11 @@ public class CredentialParser {
         if (rawCredential == null || rawCredential.length == 0) {
             return false;
         }
-        
+
         try {
             // Check if it's valid JSON
             objectMapper.readTree(rawCredential);
-            
+
             // Try to parse as a map
             Map<String, Object> jsonMap = objectMapper.readValue(rawCredential, Map.class);
             return jsonMap != null;
@@ -31,7 +31,7 @@ public class CredentialParser {
             return false;
         }
     }
-    
+
     /**
      * Checks if the string represents a JWT credential.
      */
@@ -39,16 +39,16 @@ public class CredentialParser {
         if (valStr == null || valStr.isEmpty()) {
             return false;
         }
-        
+
         valStr = valStr.trim();
         // Remove surrounding quotes if present
         if (valStr.startsWith("\"") && valStr.endsWith("\"")) {
             valStr = valStr.substring(1, valStr.length() - 1);
         }
-        
+
         return JWT_PATTERN.matcher(valStr).matches();
     }
-    
+
     /**
      * Parses a credential from various formats into a Credential.
      * Currently only supports JSON credentials.
@@ -57,20 +57,20 @@ public class CredentialParser {
         if (rawCredential == null || rawCredential.length == 0) {
             throw new Exception("JSON string is empty");
         }
-        
+
         if (isJSONCredential(rawCredential)) {
             return JSONCredential.parseJSONCredential(rawCredential);
         }
-        
+
         // Try as JWT string
         String valStr = new String(rawCredential);
         if (isJWTCredential(valStr)) {
             throw new UnsupportedOperationException("JWT credential parsing is not yet implemented");
         }
-        
+
         throw new Exception("failed to parse credential: not a valid JWT or embedded credential");
     }
-    
+
     /**
      * Parses a credential with validation (schema validation is bypassed).
      */
@@ -79,4 +79,3 @@ public class CredentialParser {
         return parseCredential(rawCredential);
     }
 }
-

@@ -12,14 +12,13 @@ import java.util.Map;
 public class Subject {
     private String id;
     private Map<String, Object> customFields;
-    
+
     public Subject() {
         this.customFields = new HashMap<>();
     }
-    
+
     public Subject(String id, Map<String, Object> customFields) {
         this.id = id;
         this.customFields = customFields != null ? customFields : new HashMap<>();
     }
 }
-

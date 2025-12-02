@@ -1,9 +1,12 @@
 package com.pila.credential.common.processor;
 
 import com.apicatalog.jsonld.JsonLd;
-import com.apicatalog.jsonld.api.ToRdfApi;
-import com.apicatalog.rdf.api.RdfQuadConsumer;
 import com.apicatalog.jsonld.document.JsonDocument;
+import com.apicatalog.rdf.nquads.NQuadsWriter;
+
+import com.apicatalog.rdf.canon.RdfCanon;
+import com.apicatalog.rdf.canon.RdfCanonTimeTicker;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -14,56 +17,37 @@ import jakarta.json.Json;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonStructure;
 import java.io.StringReader;
+import java.io.StringWriter;
 
 public class Processor {
 
-    /**
-     * Canonicalizes a document using JSON-LD toRdf and hashes the N-Quads output.
-     */
     public static byte[] canonicalizeDocument(Map<String, Object> doc) throws Exception {
         if (doc == null) {
             throw new IllegalArgumentException("failed to canonicalize document: document is nil");
         }
 
-        // 1) Normalize
         Map<String, Object> standardizedDoc = standardizeToJSONLD(doc);
 
-        // 2) Convert Map -> JSON string -> JsonStructure -> JsonDocument
-        String json = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(standardizedDoc);
+        String json = new ObjectMapper().writeValueAsString(standardizedDoc);
+
         JsonStructure jsonStructure;
         try (JsonReader reader = Json.createReader(new StringReader(json))) {
             jsonStructure = reader.read();
         }
         JsonDocument document = JsonDocument.of(jsonStructure);
 
-        // 3) Collect N-Quads via RdfQuadConsumer
-        StringBuilder nquads = new StringBuilder();
-        RdfQuadConsumer consumer = new RdfQuadConsumer() {
-            @Override
-            public RdfQuadConsumer quad(String subject,
-                                        String predicate,
-                                        String object,
-                                        String graphName,
-                                        String datatype,
-                                        String language,
-                                        String direction) {
-                String g = (graphName != null && !graphName.isEmpty()) ? " " + graphName : "";
-                nquads.append(subject).append(" ")
-                    .append(predicate).append(" ")
-                    .append(object).append(g).append(" .\n");
-                return this;
-            }
-        };
+        // 1) Create RDFC canonicalizer
+        var canon = RdfCanon.create("SHA-256", new RdfCanonTimeTicker(5 * 1000));
 
-        // 4) Use ToRdfApi on the local document
-        ToRdfApi toRdf = JsonLd.toRdf(document);
-        toRdf.provide(consumer);
+        // 2) Provide RDF from JSON-LD to canonicalizer
+        JsonLd.toRdf(document).provide(canon);
 
-        // print n-quads
-        System.out.println(nquads.toString());
+        // 3) Write canonical N-Quads to writer
+        StringWriter writer = new StringWriter();
+        canon.provide(new NQuadsWriter(writer));
 
-        // 5) Hash N-Quads
-        return computeDigest(nquads.toString().getBytes(StandardCharsets.UTF_8));
+        // 4) Hash canonical N-Quads
+        return writer.toString().getBytes(StandardCharsets.UTF_8);
     }
 
     public static byte[] computeDigest(byte[] data) throws NoSuchAlgorithmException {
@@ -82,7 +66,6 @@ public class Processor {
         return result;
     }
 
-    @SuppressWarnings("unchecked")
     private static Object convertToJSONLDCompatible(Object value) {
         if (value == null) {
             return null;

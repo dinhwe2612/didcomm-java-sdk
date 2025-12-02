@@ -20,7 +20,7 @@ public class CredentialContents {
     private List<Status> credentialStatus; // Credential status entries
     private List<Subject> subject; // Credential subjects
     private List<Schema> schemas; // Credential schemas
-    
+
     public CredentialContents() {
         this.context = new ArrayList<>();
         this.types = new ArrayList<>();
@@ -29,4 +29,3 @@ public class CredentialContents {
         this.schemas = new ArrayList<>();
     }
 }
-
