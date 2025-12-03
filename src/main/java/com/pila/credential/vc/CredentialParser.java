@@ -65,12 +65,7 @@ public class CredentialParser {
         // Try as JWT string
         String valStr = new String(rawCredential);
         if (isJWTCredential(valStr)) {
-            // TODO: Implement JWT credential parsing
-            // - Parse JWT header, payload, and signature
-            // - Extract credential claims from JWT payload
-            // - Verify JWT signature using issuer's public key
-            // - Return JWTCredential instance
-            throw new UnsupportedOperationException("JWT credential parsing is not yet implemented");
+            return JWTCredential.parseJWTCredential(valStr);
         }
 
         throw new Exception("failed to parse credential: not a valid JWT or embedded credential");
